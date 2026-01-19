@@ -207,10 +207,10 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1024166324}
   - {fileID: 1388033419}
   - {fileID: 1249133204}
   - {fileID: 1520496397}
+  - {fileID: 1024166324}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -311,10 +311,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15c1f2a0c845fdf4dac57ca3587b5c1a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _controller: {fileID: 0}
-  _target1: {fileID: 0}
-  _target2: {fileID: 0}
-  _target3: {fileID: 0}
+  _controller: {fileID: 743626290}
+  _target1: {fileID: 1388033419}
+  _target2: {fileID: 1249133204}
+  _target3: {fileID: 1520496397}
   _step1Text: Tap this button to continue.
   _step2Text: Great! Now tap the next one.
   _step3Text: Awesome! Tutorial complete.
@@ -330,8 +330,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1120441cbceb8943b9957adc1b43e14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _bootstrap: {fileID: 0}
-  _view: {fileID: 0}
+  _bootstrap: {fileID: 1595066179}
+  _view: {fileID: 1394433326}
   _autoStopIfTargetMissing: 1
   _tickInLateUpdate: 1
 --- !u!4 &743626291
@@ -948,6 +948,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1388033418}
   m_CullTransparentMesh: 1
+--- !u!114 &1394433326 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2641202473401079480, guid: e043394d390794347b812af93873fe61, type: 3}
+  m_PrefabInstance: {fileID: 8810140962425915884}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98e7221416d586046ae707e5369bd65e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1520496396
 GameObject:
   m_ObjectHideFlags: 0
@@ -1023,6 +1034,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1520496396}
   m_CullTransparentMesh: 1
+--- !u!114 &1595066179 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: -8349457338511465577, guid: c5b2b0ab6518b3b4d8dba33d0207d11b, type: 3}
+  m_PrefabInstance: {fileID: 529060679}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29e2ec728ff88eb49950196b61e96949, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2008928234
 GameObject:
   m_ObjectHideFlags: 0
