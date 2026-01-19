@@ -1314,6 +1314,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tutorial Popup
       objectReference: {fileID: 0}
+    - target: {fileID: 5076476361112642158, guid: e043394d390794347b812af93873fe61, type: 3}
+      propertyPath: m_VerticalAlignment
+      value: 256
+      objectReference: {fileID: 0}
     - target: {fileID: 6932781571188611416, guid: e043394d390794347b812af93873fe61, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
