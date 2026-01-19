@@ -273,7 +273,7 @@ MonoBehaviour:
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 1200}
+  m_ReferenceResolution: {x: 1284, y: 2778}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
@@ -1315,8 +1315,12 @@ PrefabInstance:
       value: Tutorial Popup
       objectReference: {fileID: 0}
     - target: {fileID: 5076476361112642158, guid: e043394d390794347b812af93873fe61, type: 3}
-      propertyPath: m_VerticalAlignment
-      value: 256
+      propertyPath: m_fontSize
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 5076476361112642158, guid: e043394d390794347b812af93873fe61, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 60
       objectReference: {fileID: 0}
     - target: {fileID: 6932781571188611416, guid: e043394d390794347b812af93873fe61, type: 3}
       propertyPath: m_Pivot.x

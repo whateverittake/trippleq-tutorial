@@ -167,8 +167,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 60
+  m_fontSizeBase: 60
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -328,6 +328,8 @@ MonoBehaviour:
   _textBlinkSpeed: 2.5
   _textBlinkMinAlpha: 0.45
   _textBlinkMaxAlpha: 1
+  _textMinWidth: 260
+  _textMaxWidth: 520
 --- !u!1 &2105732785927984627
 GameObject:
   m_ObjectHideFlags: 0
