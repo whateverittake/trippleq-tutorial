@@ -1314,13 +1314,9 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tutorial Popup
       objectReference: {fileID: 0}
-    - target: {fileID: 5076476361112642158, guid: e043394d390794347b812af93873fe61, type: 3}
-      propertyPath: m_fontSize
-      value: 60
-      objectReference: {fileID: 0}
-    - target: {fileID: 5076476361112642158, guid: e043394d390794347b812af93873fe61, type: 3}
-      propertyPath: m_fontSizeBase
-      value: 60
+    - target: {fileID: 1972281115218870271, guid: e043394d390794347b812af93873fe61, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6932781571188611416, guid: e043394d390794347b812af93873fe61, type: 3}
       propertyPath: m_Pivot.x
