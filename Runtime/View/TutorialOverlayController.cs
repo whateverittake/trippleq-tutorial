@@ -54,12 +54,18 @@ namespace TrippleQ.Tutorial
         {
             if (_tickInLateUpdate) return;
             _presenter?.Tick();
+
+            if (_view != null)
+                _view.TickAnim(Time.unscaledDeltaTime);
         }
 
         private void LateUpdate()
         {
             if (!_tickInLateUpdate) return;
             _presenter?.Tick();
+
+            if (_view != null)
+                _view.TickAnim(Time.unscaledDeltaTime);
         }
 
         private void OnDestroy()

@@ -32,9 +32,28 @@ namespace TrippleQ.Tutorial
         [Header("Input")]
         [SerializeField] private Graphic _raycastBlocker;
 
+        [Header("Hand")]
+        [SerializeField] private RectTransform _hand;
+        [SerializeField] private Vector2 _handOffset = new Vector2(80f, -40f);
+        [SerializeField] private float _handBobAmplitude = 12f;
+        [SerializeField] private float _handBobSpeed = 3.5f;
+        [SerializeField] private Vector2 _handBobDirection = new Vector2(0f, 1f);
+        [SerializeField] private bool _showHand = true;
+
+        [Header("Text Blink")]
+        [SerializeField] private bool _blinkText = true;
+        [SerializeField] private float _textBlinkSpeed = 2.5f;
+        [SerializeField] private float _textBlinkMinAlpha = 0.45f;
+        [SerializeField] private float _textBlinkMaxAlpha = 1f;
+
         private RectTransform _target;
         private bool _holeClickEnabled;
         private Rect _holeRectLocal; // in canvas local space
+
+        private Vector2 _handBasePos;
+        private float _animTime;
+
+        private bool _animEnabled;
 
         private void Reset()
         {
@@ -58,12 +77,47 @@ namespace TrippleQ.Tutorial
 
             if (_target != null)
                 SyncToTarget(_target);
+
+            _animTime = 0f;
+
+            if (_hand != null)
+                _hand.gameObject.SetActive(_showHand);
+
+            _animEnabled = true;
         }
 
         public void Hide()
         {
             _target = null;
             gameObject.SetActive(false);
+            if (_hand != null) _hand.gameObject.SetActive(false);
+            _animEnabled=false;
+        }
+
+        public void TickAnim(float deltaTime)
+        {
+            if (!_animEnabled) return;
+            _animTime += deltaTime;
+
+            // Hand bob
+            if (_hand != null && _hand.gameObject.activeInHierarchy && _showHand)
+            {
+                float s = Mathf.Sin(_animTime * _handBobSpeed);
+                Vector2 dir = _handBobDirection.sqrMagnitude < 0.0001f ? Vector2.up : _handBobDirection.normalized;
+
+                _hand.anchoredPosition = _handBasePos + dir * (s * _handBobAmplitude);
+            }
+
+            // Text blink (alpha pulse)
+            if (_blinkText && _description != null && _description.gameObject.activeInHierarchy)
+            {
+                float t = (Mathf.Sin(_animTime * _textBlinkSpeed) + 1f) * 0.5f; // 0..1
+                float a = Mathf.Lerp(_textBlinkMinAlpha, _textBlinkMaxAlpha, t);
+
+                var c = _description.color;
+                c.a = a;
+                _description.color = c;
+            }
         }
 
         public void SyncToTarget(RectTransform target)
@@ -132,6 +186,14 @@ namespace TrippleQ.Tutorial
             {
                 var center = (min + max) * 0.5f;
                 _textRoot.anchoredPosition = center + _textOffset;
+            }
+
+            // Hand placement: anchor to hole center + offset
+            if (_hand != null)
+            {
+                var center = (min + max) * 0.5f;
+                _handBasePos = center + _handOffset;
+                _hand.anchoredPosition = _handBasePos; // base pos (bob will be applied in TickAnim)
             }
         }
 
