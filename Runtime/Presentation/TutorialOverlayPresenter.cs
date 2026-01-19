@@ -111,6 +111,7 @@ namespace TrippleQ.Tutorial
 
             _view.EnableHoleClick(false);
             _currentButton = btn;
+            Debug.LogError("xx da den day");
             _currentButton.onClick.AddListener(OnTargetButtonClicked);
         }
 
