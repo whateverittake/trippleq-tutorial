@@ -28,6 +28,9 @@ namespace TrippleQ.Tutorial
         [SerializeField] private RectTransform _textRoot;     // (BG root / Text box)
         [SerializeField] private TMP_Text _description;
         [SerializeField] private Vector2 _textOffset = new Vector2(0, -140);
+        [SerializeField] private float _bubbleMargin = 16f; // khoảng cách tối thiểu tới mép canvas
+        [SerializeField] private float _bubbleGap = 16f;    // khoảng cách bubble tới viền hole
+        [SerializeField] private bool _preferBubbleBelow = true; // ưu tiên bubble nằm dưới hole
 
         [Header("Input")]
         [Tooltip("A full-screen Graphic (Image with alpha=0 ok) used to receive pointer clicks.")]
@@ -174,7 +177,10 @@ namespace TrippleQ.Tutorial
 
             // 8) Text position ONLY (no resizing)
             if (_textRoot != null)
-                _textRoot.anchoredPosition = center + _textOffset;
+            {
+                var center2 = (min + max) * 0.5f;
+                _textRoot.anchoredPosition = PositionBubble(center, min, max) + _textOffset;
+            }
 
             // 9) Hand base position (anim will bob around this)
             if (_hand != null && _showHand)
@@ -183,6 +189,70 @@ namespace TrippleQ.Tutorial
                 _hand.anchoredPosition = _handBasePos;
             }
         }
+
+        private Vector2 PositionBubble(Vector2 holeCenter, Vector2 holeMin, Vector2 holeMax)
+        {
+            if (_canvasRect == null || _textRoot == null)
+                return holeCenter;
+
+            // Canvas bounds (local space)
+            Rect cr = _canvasRect.rect;
+            float xMinC = cr.xMin + _bubbleMargin;
+            float xMaxC = cr.xMax - _bubbleMargin;
+            float yMinC = cr.yMin + _bubbleMargin;
+            float yMaxC = cr.yMax - _bubbleMargin;
+
+            // Bubble size (current rect). Works for fixed-size or auto-size backgrounds.
+            float bw = _textRoot.rect.width;
+            float bh = _textRoot.rect.height;
+
+            // Fallback if rect not ready (rare in first frame)
+            if (bw <= 0.01f) bw = 300f;
+            if (bh <= 0.01f) bh = 120f;
+
+            float halfW = bw * 0.5f;
+            float halfH = bh * 0.5f;
+
+            // X: try keep centered to hole
+            float x = holeCenter.x;
+
+            // Candidate Y positions:
+            // Below hole: bubble center below holeMin.y
+            float yBelow = holeMin.y - _bubbleGap - halfH;
+            // Above hole: bubble center above holeMax.y
+            float yAbove = holeMax.y + _bubbleGap + halfH;
+
+            // Check if candidates fit within canvas
+            bool belowFits = (yBelow - halfH) >= yMinC && (yBelow + halfH) <= yMaxC;
+            bool aboveFits = (yAbove - halfH) >= yMinC && (yAbove + halfH) <= yMaxC;
+
+            float y;
+            if (_preferBubbleBelow)
+            {
+                if (belowFits) y = yBelow;
+                else if (aboveFits) y = yAbove;
+                else
+                {
+                    // Neither fits fully -> clamp to nearest valid range
+                    y = Mathf.Clamp(yBelow, yMinC + halfH, yMaxC - halfH);
+                }
+            }
+            else
+            {
+                if (aboveFits) y = yAbove;
+                else if (belowFits) y = yBelow;
+                else
+                {
+                    y = Mathf.Clamp(yAbove, yMinC + halfH, yMaxC - halfH);
+                }
+            }
+
+            // Clamp X inside canvas
+            x = Mathf.Clamp(x, xMinC + halfW, xMaxC - halfW);
+
+            return new Vector2(x, y);
+        }
+
 
         private Camera GetEventCamera()
         {
