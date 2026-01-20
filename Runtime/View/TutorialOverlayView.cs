@@ -25,11 +25,12 @@ namespace TrippleQ.Tutorial
         [SerializeField] private float _padding = 16f;
 
         [Header("Text")]
-        [SerializeField] private RectTransform _textRoot;
+        [SerializeField] private RectTransform _textRoot;     // (BG root / Text box)
         [SerializeField] private TMP_Text _description;
         [SerializeField] private Vector2 _textOffset = new Vector2(0, -140);
 
         [Header("Input")]
+        [Tooltip("A full-screen Graphic (Image with alpha=0 ok) used to receive pointer clicks.")]
         [SerializeField] private Graphic _raycastBlocker;
 
         [Header("Hand")]
@@ -45,18 +46,12 @@ namespace TrippleQ.Tutorial
         [SerializeField] private float _textBlinkSpeed = 2.5f;
         [SerializeField] private float _textBlinkMinAlpha = 0.45f;
         [SerializeField] private float _textBlinkMaxAlpha = 1f;
-        [SerializeField] private float _textMinWidth = 260f;
-        [SerializeField] private float _textMaxWidth = 520f;
-        [SerializeField] private int _maxTextLines = 2;
-        [SerializeField] private float _textHorizontalPadding = 24f; // nếu có bubble bg
 
         private RectTransform _target;
         private bool _holeClickEnabled;
-        private Rect _holeRectLocal; // in canvas local space
 
         private Vector2 _handBasePos;
         private float _animTime;
-
         private bool _animEnabled;
 
         private void Reset()
@@ -72,42 +67,39 @@ namespace TrippleQ.Tutorial
             if (_description != null)
                 _description.text = description ?? string.Empty;
 
-            if (_textRoot != null)
-                UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(_textRoot);
-
-            // Force layout rebuild so background (ContentSizeFitter) updates size immediately
-            if (_textRoot != null)
-    UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(_textRoot);
-
             if (_canvas == null) _canvas = GetComponentInParent<Canvas>();
             if (_canvasRect == null && _canvas != null) _canvasRect = _canvas.transform as RectTransform;
 
-            if (_raycastBlocker != null) _raycastBlocker.raycastTarget = true;
+            if (_raycastBlocker != null)
+                _raycastBlocker.raycastTarget = true;
 
             gameObject.SetActive(true);
-
-            if (_target != null)
-                SyncToTarget(_target);
-
-            _animTime = 0f;
 
             if (_hand != null)
                 _hand.gameObject.SetActive(_showHand);
 
+            _animTime = 0f;
             _animEnabled = true;
+
+            if (_target != null)
+                SyncToTarget(_target);
         }
 
         public void Hide()
         {
             _target = null;
+            _animEnabled = false;
+
+            if (_hand != null)
+                _hand.gameObject.SetActive(false);
+
             gameObject.SetActive(false);
-            if (_hand != null) _hand.gameObject.SetActive(false);
-            _animEnabled=false;
         }
 
         public void TickAnim(float deltaTime)
         {
             if (!_animEnabled) return;
+
             _animTime += deltaTime;
 
             // Hand bob
@@ -115,14 +107,13 @@ namespace TrippleQ.Tutorial
             {
                 float s = Mathf.Sin(_animTime * _handBobSpeed);
                 Vector2 dir = _handBobDirection.sqrMagnitude < 0.0001f ? Vector2.up : _handBobDirection.normalized;
-
                 _hand.anchoredPosition = _handBasePos + dir * (s * _handBobAmplitude);
             }
 
             // Text blink (alpha pulse)
             if (_blinkText && _description != null && _description.gameObject.activeInHierarchy)
             {
-                float t = (Mathf.Sin(_animTime * _textBlinkSpeed) + 1f) * 0.5f; // 0..1
+                float t = (Mathf.Sin(_animTime * _textBlinkSpeed) + 1f) * 0.5f;
                 float a = Mathf.Lerp(_textBlinkMinAlpha, _textBlinkMaxAlpha, t);
 
                 var c = _description.color;
@@ -135,23 +126,16 @@ namespace TrippleQ.Tutorial
         {
             _target = target;
 
-            if (_canvasRect == null)
+            if (_canvasRect == null || target == null)
                 return;
-
-            if (target == null)
-            {
-                // Clear
-                _holeRectLocal = default;
-                return;
-            }
 
             // 1) Get target world corners
             var world = new Vector3[4];
             target.GetWorldCorners(world);
 
             // 2) Convert world corners -> canvas local
-            Vector2 min = WorldToCanvasLocal(_canvasRect, world[0]);
-            Vector2 max = WorldToCanvasLocal(_canvasRect, world[2]);
+            Vector2 min = WorldToCanvasLocal(world[0]);
+            Vector2 max = WorldToCanvasLocal(world[2]);
 
             // 3) Apply padding
             min -= Vector2.one * _padding;
@@ -161,7 +145,7 @@ namespace TrippleQ.Tutorial
             if (min.x > max.x) (min.x, max.x) = (max.x, min.x);
             if (min.y > max.y) (min.y, max.y) = (max.y, min.y);
 
-            // 5) Clamp to canvas rect bounds (robust to pivot/pos/scale)
+            // 5) Clamp to canvas rect bounds
             var r = _canvasRect.rect;
             float xMinC = r.xMin;
             float xMaxC = r.xMax;
@@ -173,62 +157,50 @@ namespace TrippleQ.Tutorial
             max.x = Mathf.Clamp(max.x, xMinC, xMaxC);
             max.y = Mathf.Clamp(max.y, yMinC, yMaxC);
 
-            // 6) Save hole rect (canvas local) for hole-click fallback
-            _holeRectLocal = Rect.MinMaxRect(min.x, min.y, max.x, max.y);
+            Vector2 center = (min + max) * 0.5f;
 
-            // 7) Optional highlight frame
+            // 6) Highlight frame
             if (_highlightFrame != null)
             {
-                var center = (min + max) * 0.5f;
-                var sizeHighlight = (max - min);
-
                 _highlightFrame.anchoredPosition = center;
-                _highlightFrame.sizeDelta = sizeHighlight;
+                _highlightFrame.sizeDelta = (max - min);
             }
 
-            // 8) Cutout using 4 dim panels around the hole
+            // 7) Cutout using 4 dim panels around the hole
             SetPanel(_dimTop, xMinC, xMaxC, max.y, yMaxC);
             SetPanel(_dimBottom, xMinC, xMaxC, yMinC, min.y);
             SetPanel(_dimLeft, xMinC, min.x, min.y, max.y);
             SetPanel(_dimRight, max.x, xMaxC, min.y, max.y);
 
-            // 9) Text placement
-            if (_target != null)
-                SyncToTarget(_target);
-
+            // 8) Text position ONLY (no resizing)
             if (_textRoot != null)
-                UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(_textRoot);
+                _textRoot.anchoredPosition = center + _textOffset;
 
-            // Hand placement: anchor to hole center + offset
-            if (_hand != null)
+            // 9) Hand base position (anim will bob around this)
+            if (_hand != null && _showHand)
             {
-                var center = (min + max) * 0.5f;
                 _handBasePos = center + _handOffset;
-                _hand.anchoredPosition = _handBasePos; // base pos (bob will be applied in TickAnim)
+                _hand.anchoredPosition = _handBasePos;
             }
-        }
-
-        void SetTextWidth(float width)
-        {
-            var s = _textRoot.sizeDelta;
-            s.x = width;
-            _textRoot.sizeDelta = s;
         }
 
         private Camera GetEventCamera()
         {
             if (_canvas == null) return null;
-            // Overlay mode trả về null, Camera modes trả về worldCamera
             return _canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : _canvas.worldCamera;
         }
 
         private Vector2 WorldToCanvasLocal(Vector3 worldPos)
         {
             var cam = GetEventCamera();
-            // Chuyển World -> Screen Space
+
             Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(cam, worldPos);
-            // Chuyển Screen Space -> Canvas Local Space
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(_canvasRect, screenPoint, cam, out var localPoint);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                _canvasRect,
+                screenPoint,
+                cam,
+                out var localPoint
+            );
             return localPoint;
         }
 
@@ -239,14 +211,12 @@ namespace TrippleQ.Tutorial
             float w = Mathf.Max(0, xMax - xMin);
             float h = Mathf.Max(0, yMax - yMin);
 
-            // Tắt panel nếu kích thước quá nhỏ để tối ưu hiệu năng
             bool active = (w > 0.1f && h > 0.1f);
             if (panel.gameObject.activeSelf != active)
                 panel.gameObject.SetActive(active);
 
             if (!active) return;
 
-            // Tính tâm và kích thước dựa trên hệ tọa độ Center-Center
             panel.anchoredPosition = new Vector2((xMin + xMax) * 0.5f, (yMin + yMax) * 0.5f);
             panel.sizeDelta = new Vector2(w, h);
         }
@@ -254,43 +224,22 @@ namespace TrippleQ.Tutorial
         public void EnableHoleClick(bool enable)
         {
             _holeClickEnabled = enable;
-            _raycastBlocker.gameObject.SetActive(enable);
+
+            if (_raycastBlocker != null)
+                _raycastBlocker.gameObject.SetActive(enable);
         }
 
         public void OnPointerClick(PointerEventData eventData)
         {
             if (!_holeClickEnabled) return;
-            if (_canvasRect == null) return;
+            if (_target == null) return;
 
-            var cam = eventData.pressEventCamera; // null for overlay
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                _canvasRect, eventData.position, cam, out var localPoint);
-
-            bool inside = _holeRectLocal.Contains(localPoint);
-
-            Debug.Log($"[TutorialOverlayView] OnPointerClick at {eventData.position}, local={localPoint}, inside hole: {inside}", this);
+            // Only advance if click is inside target rect
+            var cam = eventData.pressEventCamera;
+            bool inside = RectTransformUtility.RectangleContainsScreenPoint(_target, eventData.position, cam);
             if (!inside) return;
 
             TargetClicked?.Invoke();
-        }
-
-        private static Vector2 WorldToCanvasLocal(
-                RectTransform canvasRect,
-                Vector3 worldPos,
-                Camera eventCamera = null)
-        {
-            // Convert world -> screen
-            Vector2 screenPos = RectTransformUtility.WorldToScreenPoint(eventCamera, worldPos);
-
-            // Convert screen -> canvas local
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                canvasRect,
-                screenPos,
-                eventCamera,
-                out Vector2 localPoint
-            );
-
-            return localPoint;
         }
     }
 }
