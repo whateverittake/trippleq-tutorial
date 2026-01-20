@@ -316,7 +316,7 @@ MonoBehaviour:
   _padding: 16
   _textRoot: {fileID: 2290244062946885338}
   _description: {fileID: 5076476361112642158}
-  _textOffset: {x: 0, y: -140}
+  _textOffset: {x: 0, y: -80}
   _bubbleMargin: 16
   _bubbleGap: 16
   _preferBubbleBelow: 1
