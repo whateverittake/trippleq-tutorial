@@ -72,6 +72,13 @@ namespace TrippleQ.Tutorial
             if (_description != null)
                 _description.text = description ?? string.Empty;
 
+            if (_textRoot != null)
+                UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(_textRoot);
+
+            // Force layout rebuild so background (ContentSizeFitter) updates size immediately
+            if (_textRoot != null)
+    UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(_textRoot);
+
             if (_canvas == null) _canvas = GetComponentInParent<Canvas>();
             if (_canvasRect == null && _canvas != null) _canvasRect = _canvas.transform as RectTransform;
 
@@ -186,48 +193,11 @@ namespace TrippleQ.Tutorial
             SetPanel(_dimRight, max.x, xMaxC, min.y, max.y);
 
             // 9) Text placement
-            if (_textRoot != null && _description != null)
-            {
-                // Ensure TMP has latest layout data
-                _description.ForceMeshUpdate();
+            if (_target != null)
+                SyncToTarget(_target);
 
-                float maxAllowedWidth = Mathf.Clamp(_textMaxWidth, _textMinWidth, _textMaxWidth);
-
-                // Step 1: start with a "good" width (target width clamped)
-                float holeWidth = max.x - min.x;
-                float w = Mathf.Clamp(holeWidth, _textMinWidth, maxAllowedWidth);
-
-                // Step 2: expand width until it fits within max lines (if possible)
-                float lineHeight = _description.fontSize * (1f + _description.lineSpacing * 0.01f);
-                float maxHeight = lineHeight * _maxTextLines;
-
-                // We'll try a few iterations (cheap, only when step changes)
-                for (int i = 0; i < 6; i++)
-                {
-                    SetTextWidth(w);
-                    _description.ForceMeshUpdate();
-
-                    float prefH = _description.preferredHeight;
-                    if (prefH <= maxHeight + 0.5f) break;
-
-                    // expand towards max
-                    float t = (i + 1) / 6f;
-                    w = Mathf.Lerp(w, maxAllowedWidth, t);
-                }
-
-                // final apply
-                SetTextWidth(w);
-
-                // position (clamp X)
-                Vector2 center = (min + max) * 0.5f;
-                Vector2 pos = center + _textOffset;
-
-                var r2 = _canvasRect.rect;
-                float halfW = w * 0.5f;
-                pos.x = Mathf.Clamp(pos.x, r2.xMin + halfW, r2.xMax - halfW);
-
-                _textRoot.anchoredPosition = pos;
-            }
+            if (_textRoot != null)
+                UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(_textRoot);
 
             // Hand placement: anchor to hole center + offset
             if (_hand != null)
